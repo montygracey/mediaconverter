@@ -1,0 +1,23 @@
+{
+  "name": "mediaconverter",
+  "version": "1.0.0",
+  "description": "Media Converter Application for YouTube and SoundCloud",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "server": "nodemon server/server.js",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-server": "cd server && npm install",
+    "install-client": "cd frontend && npm install",
+    "install-all": "npm install && npm run install-server && npm run install-client",
+    "build": "cd frontend && npm run build",
+    "heroku-postbuild": "npm run install-client && npm run build"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}

@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: mediaconverter
+    env: node
+    buildCommand: npm install && npm run install-server && npm run install-client && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PYTHON_PATH
+        value: python3
+    buildFilter:
+      paths:
+        - package.json
+        - server/**
+        - frontend/**
+        - python/**
+    disk:
+      name: media
+      mountPath: /opt/render/project/src/python/downloads
+      sizeGB: 10
+    autoDeploy: false
+
+databases:
+  - name: mediaconverter-db
+    plan: free
+    databaseName: mediaconverter
+    ipAllowList: []
