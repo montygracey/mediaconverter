@@ -17,8 +17,12 @@ except ImportError:
 
 # Set up downloads folder
 DOWNLOADS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'downloads')
+print(f"Downloads folder set to: {DOWNLOADS_FOLDER}")
 if not os.path.exists(DOWNLOADS_FOLDER):
     os.makedirs(DOWNLOADS_FOLDER)
+    print(f"Created downloads folder: {DOWNLOADS_FOLDER}")
+else:
+    print(f"Using existing downloads folder: {DOWNLOADS_FOLDER}")
 
 def is_soundcloud_url(url):
     """Check if the URL is from SoundCloud"""
@@ -54,6 +58,8 @@ def convert_media(url, format_type, conversion_id):
             ydl_opts = {
                 'format': 'bestaudio/best',
                 'noplaylist': True,
+                'quiet': True,  # Add this to suppress yt-dlp output
+                'no_warnings': True,  # Suppress warnings
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
@@ -65,6 +71,8 @@ def convert_media(url, format_type, conversion_id):
             ydl_opts = {
                 'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
                 'noplaylist': True,
+                'quiet': True,  # Add this to suppress yt-dlp output
+                'no_warnings': True,  # Suppress warnings
                 'outtmpl': os.path.join(DOWNLOADS_FOLDER, f'{conversion_id}-%(title)s.%(ext)s'),
             }
         else:
@@ -78,6 +86,8 @@ def convert_media(url, format_type, conversion_id):
                 'Referer': 'https://www.youtube.com/' if source == 'youtube' else 'https://soundcloud.com/',
             },
             'force_ipv4': True,
+            'quiet': True,  # Make sure it's applied to all options
+            'no_warnings': True  # Make sure it's applied to all options
         })
         
         # Download and convert
@@ -95,9 +105,17 @@ def convert_media(url, format_type, conversion_id):
             # Get just the filename without the path
             base_filename = os.path.basename(filename)
             
-            result['success'] = True
-            result['title'] = title
-            result['filename'] = base_filename
+            # Verify the file exists
+            full_path = os.path.join(DOWNLOADS_FOLDER, base_filename)
+            if os.path.exists(full_path):
+                print(f"File successfully downloaded to: {full_path}")
+                result['success'] = True
+                result['title'] = title
+                result['filename'] = base_filename
+            else:
+                print(f"File not found at expected path: {full_path}")
+                result['success'] = False
+                result['error'] = f"File not found after conversion: {full_path}"
             
     except Exception as e:
         result['error'] = str(e)

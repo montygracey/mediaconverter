@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 
 const GET_CONVERSIONS = gql`
@@ -23,7 +23,13 @@ const DELETE_CONVERSION = gql`
 `;
 
 function ConversionHistory() {
-  const { loading, error, data, refetch } = useQuery(GET_CONVERSIONS);
+  const { loading, error, data, refetch } = useQuery(GET_CONVERSIONS, {
+    pollInterval: 3000, // Poll every 3 seconds to update status
+    fetchPolicy: 'network-only', // Always get fresh data
+    onCompleted: (data) => {
+      console.log('Received updated conversion data:', data);
+    }
+  });
   
   const [deleteConversion] = useMutation(DELETE_CONVERSION, {
     onCompleted: () => {
@@ -56,12 +62,30 @@ function ConversionHistory() {
     }
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+
   if (loading) return <p>Loading conversion history...</p>;
   if (error) return <p>Error loading conversion history: {error.message}</p>;
 
+  const handleManualRefresh = () => {
+    setRefreshing(true);
+    refetch().then(() => {
+      setTimeout(() => setRefreshing(false), 500);
+    });
+  };
+
   return (
     <div className="conversion-history">
-      <h2>Conversion History</h2>
+      <div className="history-header">
+        <h2>Conversion History</h2>
+        <button 
+          className={`btn btn-primary refresh-btn ${refreshing ? 'refreshing' : ''}`}
+          onClick={handleManualRefresh}
+          disabled={refreshing}
+        >
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
       
       {data.getConversions.length === 0 ? (
         <p>No conversions yet.</p>
@@ -80,6 +104,9 @@ function ConversionHistory() {
                   <strong>Status:</strong> 
                   <span className={`status-badge ${getStatusClass(conversion.status)}`}>
                     {conversion.status}
+                    {conversion.status === 'processing' && 
+                      <span className="loading-spinner"></span>
+                    }
                   </span>
                 </p>
               </div>
@@ -91,9 +118,52 @@ function ConversionHistory() {
                     target="_blank" 
                     rel="noopener noreferrer"
                     download
+                    onClick={(e) => {
+                      // Check if file exists before trying to download
+                      e.preventDefault();
+                      console.log('Checking file existence for:', conversion.filename);
+                      fetch(`http://localhost:5000/api/checkfile/${conversion.filename}`)
+                        .then(res => {
+                          console.log('File check response status:', res.status);
+                          return res.json();
+                        })
+                        .then(data => {
+                          console.log('File check data:', data);
+                          if (data.exists) {
+                            // If file exists, create a link and download
+                            console.log('File exists, creating download link');
+                            const downloadUrl = `http://localhost:5000/api/download/${conversion.filename}`;
+                            
+                            // Create an invisible link and click it to trigger download
+                            const link = document.createElement('a');
+                            link.href = downloadUrl;
+                            link.setAttribute('download', conversion.filename); // This might not work for all browsers
+                            link.setAttribute('target', '_blank'); // Open in new tab as fallback
+                            document.body.appendChild(link);
+                            link.click();
+                            setTimeout(() => {
+                              document.body.removeChild(link);
+                            }, 100);
+                          } else {
+                            // If file doesn't exist, show error and refresh
+                            console.log('File does not exist');
+                            alert('File not available. The conversion may have completed but the file is not accessible.');
+                            refetch();
+                          }
+                        })
+                        .catch(err => {
+                          console.error('Error checking file:', err);
+                          alert('Error checking file availability: ' + err.message);
+                        });
+                    }}
                   >
                     Download
                   </a>
+                )}
+                {conversion.status === 'processing' && (
+                  <button className="btn btn-secondary" disabled>
+                    Processing...
+                  </button>
                 )}
                 <button 
                   className="btn btn-danger" 

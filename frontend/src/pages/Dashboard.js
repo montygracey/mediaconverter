@@ -48,11 +48,37 @@ function Dashboard() {
               <p><strong>Format:</strong> {latestConversion.format.toUpperCase()}</p>
               {latestConversion.filename && (
                 <a 
-                  href={`http://localhost:5000/${latestConversion.filename}`} 
+                  href="#" 
                   className="btn btn-success" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  download
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Check if file exists first
+                    fetch(`http://localhost:5000/api/checkfile/${latestConversion.filename}`)
+                      .then(res => res.json())
+                      .then(data => {
+                        if (data.exists) {
+                          // If file exists, create a link and download
+                          const downloadUrl = `http://localhost:5000/api/download/${latestConversion.filename}`;
+                          
+                          // Create an invisible link and click it to trigger download
+                          const link = document.createElement('a');
+                          link.href = downloadUrl;
+                          link.setAttribute('download', latestConversion.filename); // This might not work for all browsers
+                          link.setAttribute('target', '_blank'); // Open in new tab as fallback
+                          document.body.appendChild(link);
+                          link.click();
+                          setTimeout(() => {
+                            document.body.removeChild(link);
+                          }, 100);
+                        } else {
+                          alert('File not available yet. Please try again in a moment.');
+                        }
+                      })
+                      .catch(err => {
+                        console.error('Error checking file:', err);
+                        alert('Error checking file availability.');
+                      });
+                  }}
                 >
                   Download File
                 </a>

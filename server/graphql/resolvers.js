@@ -163,16 +163,44 @@ const resolvers = {
         // Save to database
         const conversion = await newConversion.save();
         
-        // Call Python converter
-        const result = await convertMedia(url, source, format, conversion.id);
-        
-        // Update conversion with results
-        conversion.status = result.success ? 'completed' : 'failed';
-        conversion.title = result.title || null;
-        conversion.filename = result.filename || null;
-        
+        // Set temporary details
+        conversion.title = 'Processing...';
+        conversion.filename = `${conversion.id}-processing.${format}`;
         await conversion.save();
         
+        // Start conversion in the background
+        setTimeout(async () => {
+          try {
+            // Actually run the conversion
+            const result = await convertMedia(url, source, format, conversion.id);
+            console.log('Conversion result:', result);
+            
+            // Update conversion with results
+            const conversionToUpdate = await Conversion.findById(conversion.id);
+            if (conversionToUpdate) {
+              conversionToUpdate.status = result.success ? 'completed' : 'failed';
+              conversionToUpdate.title = result.title || 'Unknown title';
+              conversionToUpdate.filename = result.filename || null;
+              await conversionToUpdate.save();
+              console.log('Conversion updated in database:', conversionToUpdate);
+            }
+          } catch (err) {
+            console.error('Background conversion error:', err);
+            // Update as failed
+            try {
+              const conversionToUpdate = await Conversion.findById(conversion.id);
+              if (conversionToUpdate) {
+                conversionToUpdate.status = 'failed';
+                conversionToUpdate.title = 'Error occurred during conversion';
+                await conversionToUpdate.save();
+              }
+            } catch (updateErr) {
+              console.error('Failed to update conversion status:', updateErr);
+            }
+          }
+        }, 100);
+        
+        // Return the conversion immediately
         return conversion;
       } catch (err) {
         console.error('Conversion error:', err);

@@ -128,3 +128,6 @@ The application uses GraphQL for API requests. The GraphQL endpoint is available
 ## License
 
 MIT
+
+frontend && npm install -D vite @vitejs/plugin-react
+npm install -D vitest jsdom @testing-library/react

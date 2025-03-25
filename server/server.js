@@ -29,16 +29,106 @@ async function startServer() {
 
   await server.start();
 
+  // Enable CORS for all routes - should come before other middleware
+  app.use(cors({
+    origin: '*', // Allow all origins for testing
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  }));
+
+  // Add body parsing middleware
+  app.use(express.json());
+  
   // Auth middleware
   app.use(auth);
 
-  // Static files middleware
-  app.use(express.static(path.join(__dirname, '../python/downloads')));
+  // Static files middleware - serve the downloads folder
+  const downloadsPath = path.join(__dirname, '../python/downloads');
+  console.log(`Serving static files from: ${downloadsPath}`);
+  
+  // Log the contents of the downloads directory
+  try {
+    const files = require('fs').readdirSync(downloadsPath);
+    console.log('Files in downloads directory:', files);
+  } catch (err) {
+    console.error('Error reading downloads directory:', err);
+  }
+  
+  // Set up static file serving with explicit content disposition header
+  app.use(express.static(downloadsPath, {
+    setHeaders: (res, filePath) => {
+      // Set content disposition to attachment to force download
+      const filename = path.basename(filePath);
+      const encodedFilename = encodeURIComponent(filename);
+      res.set('Content-Disposition', `attachment; filename=${encodedFilename}`);
+      
+      // Set appropriate content type based on extension
+      if (path.extname(filePath) === '.mp3') {
+        res.set('Content-Type', 'audio/mpeg');
+      } else if (path.extname(filePath) === '.mp4') {
+        res.set('Content-Type', 'video/mp4');
+      } else {
+        res.set('Content-Type', 'application/octet-stream');
+      }
+    }
+  }));
+  
+  // Add a route to check for file existence
+  app.get('/api/checkfile/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(downloadsPath, filename);
+    
+    console.log(`Checking if file exists: ${filePath}`);
+    
+    try {
+      if (require('fs').existsSync(filePath)) {
+        console.log(`File exists: ${filePath}`);
+        res.json({ exists: true, path: filePath });
+      } else {
+        console.log(`File does not exist: ${filePath}`);
+        res.json({ exists: false });
+      }
+    } catch (err) {
+      console.error(`Error checking file ${filename}:`, err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+  // Add a dedicated download endpoint for better control
+  app.get('/api/download/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(downloadsPath, filename);
+    
+    console.log(`Download request for: ${filePath}`);
+    
+    try {
+      if (require('fs').existsSync(filePath)) {
+        console.log(`Sending file: ${filePath}`);
+        
+        // Use res.download which properly handles Content-Disposition
+        res.download(filePath, filename, (err) => {
+          if (err) {
+            console.error(`Error during download: ${err}`);
+            // If headers already sent, we can't send a JSON response here
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'Download failed' });
+            }
+          }
+        });
+      } else {
+        console.log(`File not found: ${filePath}`);
+        res.status(404).json({ error: 'File not found' });
+      }
+    } catch (err) {
+      console.error(`Error downloading file ${filename}:`, err);
+      res.status(500).json({ error: err.message });
+    }
+  });
 
-  // Apply middleware
+  // Apply middleware for GraphQL
   app.use(
     '/graphql',
-    cors(),
     express.json(),
     expressMiddleware(server, {
       context: async ({ req }) => ({ req })

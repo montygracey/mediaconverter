@@ -118,6 +118,22 @@
   margin-top: 3rem;
 }
 
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.refresh-btn {
+  transition: all 0.3s ease;
+}
+
+.refresh-btn.refreshing {
+  opacity: 0.7;
+  position: relative;
+}
+
 .history-item {
   display: flex;
   justify-content: space-between;
@@ -136,6 +152,23 @@
 .history-item-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Status badges */
