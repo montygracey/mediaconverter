@@ -1,15 +1,15 @@
-# Media Converter Application
+# Media Converter
 
-A MERN stack application for converting YouTube videos to MP3/MP4 and SoundCloud tracks to MP3.
+ This MERN stack application converts YouTube videos and SoundCloud tracks to downloadable audio files.
 
 ## Features
 
 - User authentication with JWT
-- YouTube to MP3/MP4 conversion
+- YouTube to MP3 conversion
 - SoundCloud to MP3 conversion
 - Conversion history tracking
 - GraphQL API
-- Responsive React UI
+- Black & white UI 
 
 ## Project Structure
 
@@ -90,28 +90,33 @@ This will start both the backend server (on port 5000) and the frontend developm
 
 ## Deploying to Render
 
-1. Create a new Web Service on Render
-2. Connect your GitHub repository
-3. Use the following settings:
-   - **Environment**: Node
-   - **Build Command**: `npm install && npm run install-server && npm run install-client && npm run build`
-   - **Start Command**: `npm start`
+This project includes a `render.yaml` file for easy deployment to Render.
 
-4. Add the following environment variables:
-   - `PORT`: 8080 (Render's default port)
-   - `MONGO_URI`: Your MongoDB connection string (e.g., MongoDB Atlas)
-   - `JWT_SECRET`: A strong secret key for JWT
-   - `NODE_ENV`: production
-   - `PYTHON_PATH`: python3
+1. Sign up or login to [Render](https://render.com)
+2. Connect your GitHub/GitLab repository with the codebase
+3. Create a new Web Service:
+   - Select your repository
+   - Render will automatically detect the render.yaml file
+   - Confirm the configuration settings
 
-5. Under the "Advanced" settings:
-   - Add the following packages to install:
+4. Set up environment variables:
+   - The render.yaml already defines most needed variables
+   - Add your `MONGO_URI` for your MongoDB connection
+   - `JWT_SECRET` will be auto-generated
+
+5. Confirm deployment settings:
+   - Build command: `npm install && npm run install-server && npm run install-client && npm run build`
+   - Start command: `npm start`
+
+6. Install required system packages:
+   - In the Advanced settings, add these system packages:
      - `python3`
      - `python3-pip`
      - `ffmpeg`
-   - Add a custom build command: `pip install yt-dlp`
 
-6. Deploy the service
+7. Click "Create Web Service" to deploy
+
+The application is configured to use a 10GB disk mount for downloaded files and will create a free MongoDB instance through Render.
 
 ## API Documentation
 
@@ -129,5 +134,3 @@ The application uses GraphQL for API requests. The GraphQL endpoint is available
 
 MIT
 
-frontend && npm install -D vite @vitejs/plugin-react
-npm install -D vitest jsdom @testing-library/react
