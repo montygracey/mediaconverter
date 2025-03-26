@@ -67,14 +67,7 @@ def convert_media(url, format_type, conversion_id):
                 }],
                 'outtmpl': os.path.join(DOWNLOADS_FOLDER, f'{conversion_id}-%(title)s.%(ext)s'),
             }
-        elif format_type == 'mp4' and source == 'youtube':
-            ydl_opts = {
-                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                'noplaylist': True,
-                'quiet': True,  # Add this to suppress yt-dlp output
-                'no_warnings': True,  # Suppress warnings
-                'outtmpl': os.path.join(DOWNLOADS_FOLDER, f'{conversion_id}-%(title)s.%(ext)s'),
-            }
+        # MP4 format option removed
         else:
             result['error'] = f'Unsupported format {format_type} for source {source}'
             return result

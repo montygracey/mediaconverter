@@ -19,7 +19,7 @@ const CREATE_CONVERSION = gql`
 function ConverterForm({ onConversionComplete }) {
   const [url, setUrl] = useState('');
   const [source, setSource] = useState('youtube');
-  const [format, setFormat] = useState('mp3');
+  const [format, setFormat] = useState('mp3');  // Only MP3 is supported now
   const [errors, setErrors] = useState({});
 
   const [createConversion, { loading }] = useMutation(CREATE_CONVERSION, {
@@ -109,14 +109,9 @@ function ConverterForm({ onConversionComplete }) {
             id="format"
             value={format}
             onChange={(e) => setFormat(e.target.value)}
-            disabled={source === 'soundcloud' && format === 'mp4'}
           >
             <option value="mp3">MP3</option>
-            {source === 'youtube' && <option value="mp4">MP4</option>}
           </select>
-          {source === 'soundcloud' && format === 'mp4' && (
-            <small className="form-text">MP4 conversion is only available for YouTube videos</small>
-          )}
         </div>
         
         <button type="submit" className="btn btn-primary" disabled={loading}>

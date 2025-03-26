@@ -8,9 +8,9 @@ function Home() {
   return (
     <div className="home-page">
       <div className="home-hero">
-        <h1>Media Converter</h1>
+        <h1>AnyMP3</h1>
         <p className="lead">
-          Convert YouTube videos and SoundCloud tracks to MP3/MP4 formats with ease.
+          Convert YouTube videos and SoundCloud tracks to MP3 format with ease.
         </p>
         {user ? (
           <Link to="/dashboard" className="btn btn-primary">
@@ -30,10 +30,10 @@ function Home() {
 
       <div className="features">
         <div className="feature-card">
-          <h3>YouTube to MP3/MP4</h3>
+          <h3>YouTube to MP3</h3>
           <p>
-            Convert YouTube videos to high quality MP3 audio or MP4 video files
-            for offline listening or viewing.
+            Convert YouTube videos to high quality MP3 audio files
+            for offline listening.
           </p>
         </div>
         <div className="feature-card">

@@ -12,7 +12,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/">Media Converter</Link>
+        <Link to="/">AnyMP3</Link>
       </div>
       <div className="navbar-nav">
         {user ? (

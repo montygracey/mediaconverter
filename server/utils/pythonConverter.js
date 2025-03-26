@@ -5,7 +5,7 @@ const path = require('path');
  * Convert media using Python script
  * @param {string} url - URL of the media to convert
  * @param {string} source - Source platform (youtube, soundcloud)
- * @param {string} format - Output format (mp3, mp4)
+ * @param {string} format - Output format (mp3)
  * @param {string} conversionId - Unique ID for the conversion
  * @returns {Promise<Object>} - Result of the conversion
  */
