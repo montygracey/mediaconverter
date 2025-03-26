@@ -17,11 +17,11 @@
   align-items: center;
   padding: 0.7rem 2rem;
   background-color: var(--primary-color);
-  color: white;
+  color: var(--light-color);
   position: sticky;
   top: 0;
   z-index: 1;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: var(--border-style);
 }
 
 .navbar a {
@@ -64,10 +64,12 @@
 
 .feature-card {
   padding: 1.5rem;
-  background: white;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background: var(--light-color);
+  border-radius: 0;
+  border: var(--border-style);
+  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.8);
   text-align: center;
+  position: relative;
 }
 
 .feature-card h3 {
@@ -83,9 +85,10 @@
 
 .auth-form {
   padding: 2rem;
-  background: white;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background: var(--light-color);
+  border-radius: 0;
+  border: var(--border-style);
+  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.8);
 }
 
 .auth-form h2 {
@@ -139,9 +142,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: white;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background: var(--light-color);
+  border-radius: 0;
+  border: var(--border-style);
+  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.8);
   margin-bottom: 1rem;
 }
 
