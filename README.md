@@ -88,35 +88,6 @@ npm run dev
 
 This will start both the backend server (on port 5000) and the frontend development server (on port 3000).
 
-## Deploying to Render
-
-This project includes a `render.yaml` file for easy deployment to Render.
-
-1. Sign up or login to [Render](https://render.com)
-2. Connect your GitHub/GitLab repository with the codebase
-3. Create a new Web Service:
-   - Select your repository
-   - Render will automatically detect the render.yaml file
-   - Confirm the configuration settings
-
-4. Set up environment variables:
-   - The render.yaml already defines most needed variables
-   - Add your `MONGO_URI` for your MongoDB connection
-   - `JWT_SECRET` will be auto-generated
-
-5. Confirm deployment settings:
-   - Build command: `npm install && npm run install-server && npm run install-client && npm run build`
-   - Start command: `npm start`
-
-6. Install required system packages:
-   - In the Advanced settings, add these system packages:
-     - `python3`
-     - `python3-pip`
-     - `ffmpeg`
-
-7. Click "Create Web Service" to deploy
-
-The application is configured to use a 10GB disk mount for downloaded files and will create a free MongoDB instance through Render.
 
 ## API Documentation
 
