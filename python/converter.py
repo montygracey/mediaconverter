@@ -58,8 +58,9 @@ def convert_media(url, format_type, conversion_id):
             ydl_opts = {
                 'format': 'bestaudio/best',
                 'noplaylist': True,
-                'quiet': True,
-                'no_warnings': True,
+                'cookies_from_browser': ('chrome',),
+                'quiet': True,  # Add this to suppress yt-dlp output
+                'no_warnings': True,  # Suppress warnings
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
@@ -67,24 +68,20 @@ def convert_media(url, format_type, conversion_id):
                 }],
                 'outtmpl': os.path.join(DOWNLOADS_FOLDER, f'{conversion_id}-%(title)s.%(ext)s'),
             }
+        # MP4 format option removed
         else:
             result['error'] = f'Unsupported format {format_type} for source {source}'
             return result
         
-        # Enhanced options for cloud environment with better YouTube handling
+        # Additional common options
         ydl_opts.update({
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
                 'Referer': 'https://www.youtube.com/' if source == 'youtube' else 'https://soundcloud.com/',
-                'Origin': 'https://www.youtube.com' if source == 'youtube' else 'https://soundcloud.com',
-                'Accept-Language': 'en-US,en;q=0.9',
             },
             'force_ipv4': True,
-            'quiet': True,
-            'no_warnings': True,
-            'nocheckcertificate': True,  # Sometimes helps with HTTPS issues
-            'geo_bypass': True,          # Try to bypass geo-restrictions
-            'extractor_retries': 3       # Retry extraction a few times
+            'quiet': True,  # Make sure it's applied to all options
+            'no_warnings': True  # Make sure it's applied to all options
         })
         
         # Download and convert
