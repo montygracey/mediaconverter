@@ -137,10 +137,32 @@ async function startServer() {
 
   // Serve static assets in production
   if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../frontend/build')));
+    const clientPath = path.join(__dirname, '../frontend/build');
+    
+    console.log('Looking for frontend build at:', clientPath);
+    try {
+      if (require('fs').existsSync(clientPath)) {
+        const files = require('fs').readdirSync(clientPath);
+        console.log('Files in build directory:', files);
+      } else {
+        console.log('Build directory does not exist');
+      }
+    } catch (err) {
+      console.error('Error reading build directory:', err);
+    }
+    
+    app.use(express.static(clientPath));
 
     app.get('*', (req, res) => {
-      res.sendFile(path.resolve(__dirname, '../frontend', 'build', 'index.html'));
+      const indexPath = path.join(clientPath, 'index.html');
+      console.log('Trying to serve:', indexPath);
+      
+      if (require('fs').existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        console.error('index.html not found at', indexPath);
+        res.status(404).send('Build file not found - deployment issue');
+      }
     });
   }
 
