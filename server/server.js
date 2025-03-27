@@ -8,7 +8,6 @@ const path = require('path');
 const typeDefs = require('./graphql/typeDefs');
 const resolvers = require('./graphql/resolvers');
 const auth = require('./middleware/auth');
-const fs = require('fs');
 
 async function startServer() {
   const app = express();
@@ -50,18 +49,30 @@ async function startServer() {
   
   // Log the contents of the downloads directory
   try {
-    const files = fs.readdirSync(downloadsPath);
+    const files = require('fs').readdirSync(downloadsPath);
     console.log('Files in downloads directory:', files);
   } catch (err) {
     console.error('Error reading downloads directory:', err);
-    // Try to create the directory if it doesn't exist
-    try {
-      fs.mkdirSync(downloadsPath, { recursive: true });
-      console.log('Created downloads directory:', downloadsPath);
-    } catch (mkdirErr) {
-      console.error('Error creating downloads directory:', mkdirErr);
-    }
   }
+  
+  // Set up static file serving with explicit content disposition header
+  app.use(express.static(downloadsPath, {
+    setHeaders: (res, filePath) => {
+      // Set content disposition to attachment to force download
+      const filename = path.basename(filePath);
+      const encodedFilename = encodeURIComponent(filename);
+      res.set('Content-Disposition', `attachment; filename=${encodedFilename}`);
+      
+      // Set appropriate content type based on extension
+      if (path.extname(filePath) === '.mp3') {
+        res.set('Content-Type', 'audio/mpeg');
+      } else if (path.extname(filePath) === '.mp4') {
+        res.set('Content-Type', 'video/mp4');
+      } else {
+        res.set('Content-Type', 'application/octet-stream');
+      }
+    }
+  }));
   
   // Add a route to check for file existence
   app.get('/api/checkfile/:filename', (req, res) => {
@@ -71,7 +82,7 @@ async function startServer() {
     console.log(`Checking if file exists: ${filePath}`);
     
     try {
-      if (fs.existsSync(filePath)) {
+      if (require('fs').existsSync(filePath)) {
         console.log(`File exists: ${filePath}`);
         res.json({ exists: true, path: filePath });
       } else {
@@ -92,31 +103,17 @@ async function startServer() {
     console.log(`Download request for: ${filePath}`);
     
     try {
-      if (fs.existsSync(filePath)) {
+      if (require('fs').existsSync(filePath)) {
         console.log(`Sending file: ${filePath}`);
         
-        // Set content disposition to attachment to force download
-        const encodedFilename = encodeURIComponent(filename);
-        res.set('Content-Disposition', `attachment; filename="${encodedFilename}"`);
-        
-        // Set appropriate content type based on extension
-        if (path.extname(filePath) === '.mp3') {
-          res.set('Content-Type', 'audio/mpeg');
-        } else if (path.extname(filePath) === '.mp4') {
-          res.set('Content-Type', 'video/mp4');
-        } else {
-          res.set('Content-Type', 'application/octet-stream');
-        }
-        
-        // Create read stream and pipe to response
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
-        
-        // Handle errors
-        fileStream.on('error', (err) => {
-          console.error(`Error during streaming: ${err}`);
-          if (!res.headersSent) {
-            res.status(500).json({ error: 'Download failed' });
+        // Use res.download which properly handles Content-Disposition
+        res.download(filePath, filename, (err) => {
+          if (err) {
+            console.error(`Error during download: ${err}`);
+            // If headers already sent, we can't send a JSON response here
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'Download failed' });
+            }
           }
         });
       } else {
@@ -142,6 +139,7 @@ async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     // Try multiple possible paths where the build might be located
     const possiblePaths = [
+      
       path.join(__dirname, '../frontend/dist'),
       path.join(__dirname, '../build'),
       path.join(__dirname, '../dist')
@@ -153,8 +151,8 @@ async function startServer() {
     for (const testPath of possiblePaths) {
       console.log('Checking for build at:', testPath);
       try {
-        if (fs.existsSync(testPath)) {
-          const files = fs.readdirSync(testPath);
+        if (require('fs').existsSync(testPath)) {
+          const files = require('fs').readdirSync(testPath);
           console.log(`Files in ${testPath}:`, files);
           
           if (files.includes('index.html')) {
@@ -170,7 +168,7 @@ async function startServer() {
     
     if (!clientPath) {
       console.error('Could not find any build directory with index.html');
-      clientPath = path.join(__dirname, '../frontend/dist'); // Fallback to the expected path
+      clientPath = path.join(__dirname, '../frontend/build'); // Fallback to the expected path
     }
     
     console.log('Serving static files from:', clientPath);
@@ -180,7 +178,7 @@ async function startServer() {
       const indexPath = path.join(clientPath, 'index.html');
       console.log('Trying to serve:', indexPath);
       
-      if (fs.existsSync(indexPath)) {
+      if (require('fs').existsSync(indexPath)) {
         res.sendFile(indexPath);
       } else {
         console.error('index.html not found at', indexPath);

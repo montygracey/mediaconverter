@@ -1,6 +1,5 @@
 const { PythonShell } = require('python-shell');
 const path = require('path');
-const fs = require('fs');
 
 /**
  * Convert media using Python script
@@ -12,20 +11,9 @@ const fs = require('fs');
  */
 const convertMedia = (url, source, format, conversionId) => {
   return new Promise((resolve, reject) => {
-    // Ensure downloads directory exists
-    const downloadsPath = path.join(__dirname, '../../python/downloads');
-    if (!fs.existsSync(downloadsPath)) {
-      try {
-        fs.mkdirSync(downloadsPath, { recursive: true });
-        console.log(`Created downloads directory: ${downloadsPath}`);
-      } catch (err) {
-        console.error(`Error creating downloads directory: ${err}`);
-      }
-    }
-
     const options = {
       mode: 'text',
-      pythonPath: process.env.PYTHON_PATH || 'python3',
+      pythonPath: process.env.PYTHON_PATH || 'python', // Try 'python' instead of 'python3'
       pythonOptions: ['-u'], // unbuffered output
       scriptPath: path.join(__dirname, '../../python'),
       args: [url, format, conversionId],
