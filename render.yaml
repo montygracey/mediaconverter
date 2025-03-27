@@ -3,7 +3,7 @@ services:
     name: mediaconverter
     env: node
     buildCommand: apt-get update && apt-get install -y python3 python3-pip ffmpeg curl && pip install -U yt-dlp && pip install -r python/requirements.txt && mkdir -p python/downloads && npm install && npm run install-server && npm run install-client && cd frontend && npm run build && ls -la dist && python3 -c "import sys; print(sys.path); import yt_dlp; print('yt-dlp version:', yt_dlp.version.__version__)"
-    startCommand: npm start
+    startCommand: pip install -U yt-dlp && npm start
     envVars:
       - key: NODE_ENV
         value: production
