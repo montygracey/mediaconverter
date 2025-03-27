@@ -2,7 +2,7 @@ services:
   - type: web
     name: mediaconverter
     env: node
-    buildCommand: apt-get update && apt-get install -y python3 python3-pip ffmpeg curl && pip install -r python/requirements.txt && pip install yt-dlp && mkdir -p python/downloads && npm install && npm run install-server && npm run install-client && cd frontend && npm run build && ls -la dist && find . -type d -name dist -o -name build | xargs ls -la 2>/dev/null || true
+    buildCommand: apt-get update && apt-get install -y python3 python3-pip ffmpeg curl && pip install -U yt-dlp && pip install -r python/requirements.txt && mkdir -p python/downloads && npm install && npm run install-server && npm run install-client && cd frontend && npm run build && ls -la dist && python3 -c "import sys; print(sys.path); import yt_dlp; print('yt-dlp version:', yt_dlp.version.__version__)"
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -13,6 +13,8 @@ services:
         generateValue: true
       - key: PYTHON_PATH
         value: python3
+      - key: PYTHONPATH
+        value: /opt/render/project/src
     buildFilter:
       paths:
         - package.json
