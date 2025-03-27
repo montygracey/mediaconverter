@@ -2,7 +2,7 @@ services:
   - type: web
     name: mediaconverter
     env: node
-    buildCommand: apt-get update && apt-get install -y python3 python3-pip ffmpeg && pip install -r python/requirements.txt && mkdir -p python/downloads && npm install && npm run install-server && npm run install-client && cd frontend && npm run build && ls -la dist && find . -type d -name dist -o -name build | xargs ls -la 2>/dev/null || true
+    buildCommand: apt-get update && apt-get install -y python3 python3-pip ffmpeg curl && pip install -r python/requirements.txt && pip install yt-dlp && mkdir -p python/downloads && npm install && npm run install-server && npm run install-client && cd frontend && npm run build && ls -la dist && find . -type d -name dist -o -name build | xargs ls -la 2>/dev/null || true
     startCommand: npm start
     envVars:
       - key: NODE_ENV
