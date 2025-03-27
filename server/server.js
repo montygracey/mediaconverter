@@ -137,20 +137,41 @@ async function startServer() {
 
   // Serve static assets in production
   if (process.env.NODE_ENV === 'production') {
-    const clientPath = path.join(__dirname, '../frontend/build');
+    // Try multiple possible paths where the build might be located
+    const possiblePaths = [
+      path.join(__dirname, '../frontend/build'),
+      path.join(__dirname, '../frontend/dist'),
+      path.join(__dirname, '../build'),
+      path.join(__dirname, '../dist')
+    ];
     
-    console.log('Looking for frontend build at:', clientPath);
-    try {
-      if (require('fs').existsSync(clientPath)) {
-        const files = require('fs').readdirSync(clientPath);
-        console.log('Files in build directory:', files);
-      } else {
-        console.log('Build directory does not exist');
+    let clientPath = null;
+    
+    // Find the first path that exists and contains an index.html
+    for (const testPath of possiblePaths) {
+      console.log('Checking for build at:', testPath);
+      try {
+        if (require('fs').existsSync(testPath)) {
+          const files = require('fs').readdirSync(testPath);
+          console.log(`Files in ${testPath}:`, files);
+          
+          if (files.includes('index.html')) {
+            clientPath = testPath;
+            console.log('Found build directory with index.html at:', clientPath);
+            break;
+          }
+        }
+      } catch (err) {
+        console.error(`Error reading directory ${testPath}:`, err);
       }
-    } catch (err) {
-      console.error('Error reading build directory:', err);
     }
     
+    if (!clientPath) {
+      console.error('Could not find any build directory with index.html');
+      clientPath = path.join(__dirname, '../frontend/build'); // Fallback to the expected path
+    }
+    
+    console.log('Serving static files from:', clientPath);
     app.use(express.static(clientPath));
 
     app.get('*', (req, res) => {
@@ -161,7 +182,7 @@ async function startServer() {
         res.sendFile(indexPath);
       } else {
         console.error('index.html not found at', indexPath);
-        res.status(404).send('Build file not found - deployment issue');
+        res.status(404).send('Build file not found - deployment issue. Please check server logs.');
       }
     });
   }
