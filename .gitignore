@@ -29,7 +29,7 @@ build/
 *.egg
 
 # Media files
-python/downloads/
+python/downloads/*.mp3
 
 # Production build
 /frontend/build

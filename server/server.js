@@ -139,7 +139,7 @@ async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     // Try multiple possible paths where the build might be located
     const possiblePaths = [
-      path.join(__dirname, '../frontend/build'),
+      
       path.join(__dirname, '../frontend/dist'),
       path.join(__dirname, '../build'),
       path.join(__dirname, '../dist')
