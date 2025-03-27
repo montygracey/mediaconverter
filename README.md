@@ -69,15 +69,7 @@ npm run install-all
 pip install -r python/requirements.txt
 ```
 
-If you're having issues with yt-dlp installation, you can install it directly:
-```
-pip install yt-dlp
-```
-
-5. Install FFmpeg (platform-dependent):
-   - For Ubuntu: `apt-get install ffmpeg`
-   - For macOS: `brew install ffmpeg`
-   - For Windows: Download from [FFmpeg website](https://ffmpeg.org/download.html)
+5. Install FFmpeg 
 
 ## Running the Application Locally
 
