@@ -53,18 +53,18 @@ function Dashboard() {
                   onClick={(e) => {
                     e.preventDefault();
                     // Check if file exists first
-                    fetch(`http://localhost:5000/api/checkfile/${latestConversion.filename}`)
+                    fetch(`/api/checkfile/${latestConversion.filename}`)
                       .then(res => res.json())
                       .then(data => {
                         if (data.exists) {
                           // If file exists, create a link and download
-                          const downloadUrl = `http://localhost:5000/api/download/${latestConversion.filename}`;
+                          const downloadUrl = `/api/download/${latestConversion.filename}`;
                           
                           // Create an invisible link and click it to trigger download
                           const link = document.createElement('a');
                           link.href = downloadUrl;
-                          link.setAttribute('download', latestConversion.filename); // This might not work for all browsers
-                          link.setAttribute('target', '_blank'); // Open in new tab as fallback
+                          link.setAttribute('download', latestConversion.filename); 
+                          link.setAttribute('target', '_blank'); 
                           document.body.appendChild(link);
                           link.click();
                           setTimeout(() => {

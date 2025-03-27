@@ -113,16 +113,14 @@ function ConversionHistory() {
               <div className="history-item-actions">
                 {conversion.status === 'completed' && conversion.filename && (
                   <a 
-                    href={`http://localhost:5000/${conversion.filename}`} 
+                    href={`/api/download/${conversion.filename}`} 
                     className="btn btn-success" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
                     download
                     onClick={(e) => {
                       // Check if file exists before trying to download
                       e.preventDefault();
                       console.log('Checking file existence for:', conversion.filename);
-                      fetch(`http://localhost:5000/api/checkfile/${conversion.filename}`)
+                      fetch(`/api/checkfile/${conversion.filename}`)
                         .then(res => {
                           console.log('File check response status:', res.status);
                           return res.json();
@@ -132,13 +130,13 @@ function ConversionHistory() {
                           if (data.exists) {
                             // If file exists, create a link and download
                             console.log('File exists, creating download link');
-                            const downloadUrl = `http://localhost:5000/api/download/${conversion.filename}`;
+                            const downloadUrl = `/api/download/${conversion.filename}`;
                             
                             // Create an invisible link and click it to trigger download
                             const link = document.createElement('a');
                             link.href = downloadUrl;
-                            link.setAttribute('download', conversion.filename); // This might not work for all browsers
-                            link.setAttribute('target', '_blank'); // Open in new tab as fallback
+                            link.setAttribute('download', conversion.filename);
+                            link.setAttribute('target', '_blank');
                             document.body.appendChild(link);
                             link.click();
                             setTimeout(() => {

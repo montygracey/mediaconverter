@@ -23,6 +23,23 @@ if not os.path.exists(DOWNLOADS_FOLDER):
     print(f"Created downloads folder: {DOWNLOADS_FOLDER}")
 else:
     print(f"Using existing downloads folder: {DOWNLOADS_FOLDER}")
+    # List existing files
+    try:
+        files = os.listdir(DOWNLOADS_FOLDER)
+        print(f"Files in downloads folder: {files}")
+    except Exception as e:
+        print(f"Error listing files in downloads folder: {e}")
+
+# Check permissions
+try:
+    test_file_path = os.path.join(DOWNLOADS_FOLDER, 'test_permissions.txt')
+    with open(test_file_path, 'w') as f:
+        f.write('Test permissions')
+    print(f"Successfully wrote test file: {test_file_path}")
+    os.remove(test_file_path)
+    print(f"Successfully removed test file: {test_file_path}")
+except Exception as e:
+    print(f"Permission test failed: {e}")
 
 def is_soundcloud_url(url):
     """Check if the URL is from SoundCloud"""
@@ -102,6 +119,21 @@ def convert_media(url, format_type, conversion_id):
             full_path = os.path.join(DOWNLOADS_FOLDER, base_filename)
             if os.path.exists(full_path):
                 print(f"File successfully downloaded to: {full_path}")
+                # Check file size
+                file_size = os.path.getsize(full_path)
+                print(f"File size: {file_size} bytes")
+                
+                # Check file permissions
+                permissions = oct(os.stat(full_path).st_mode)[-3:]
+                print(f"File permissions: {permissions}")
+                
+                # Try to make the file readable for everyone
+                try:
+                    os.chmod(full_path, 0o644)
+                    print(f"Set file permissions to 644")
+                except Exception as e:
+                    print(f"Error setting file permissions: {e}")
+                
                 result['success'] = True
                 result['title'] = title
                 result['filename'] = base_filename
