@@ -3,8 +3,6 @@ import json
 import os
 import argparse
 from urllib.parse import urlparse
-import time
-import random
 
 try:
     import yt_dlp
@@ -60,8 +58,9 @@ def convert_media(url, format_type, conversion_id):
             ydl_opts = {
                 'format': 'bestaudio/best',
                 'noplaylist': True,
-                'quiet': True,
-                'no_warnings': True,
+                'cookies_from_browser': ('chrome',),
+                'quiet': True,  # Add this to suppress yt-dlp output
+                'no_warnings': True,  # Suppress warnings
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
@@ -69,122 +68,23 @@ def convert_media(url, format_type, conversion_id):
                 }],
                 'outtmpl': os.path.join(DOWNLOADS_FOLDER, f'{conversion_id}-%(title)s.%(ext)s'),
             }
+        # MP4 format option removed
         else:
             result['error'] = f'Unsupported format {format_type} for source {source}'
             return result
         
-        # Enhanced options for cloud environment with better YouTube handling
+        # Additional common options
         ydl_opts.update({
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
                 'Referer': 'https://www.youtube.com/' if source == 'youtube' else 'https://soundcloud.com/',
-                'Origin': 'https://www.youtube.com' if source == 'youtube' else 'https://soundcloud.com',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'sec-ch-ua': '"Chromium";v="121", "Not A(Brand";v="99"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
             },
             'force_ipv4': True,
-            'quiet': True,
-            'no_warnings': True,
-            'nocheckcertificate': True,
-            'geo_bypass': True,
-            'extractor_retries': 5,
-            'sleep_interval': 2,  # Add delays between requests to avoid rate limiting
-            'max_sleep_interval': 5,
-            'sleep_interval_requests': 3
+            'quiet': True,  # Make sure it's applied to all options
+            'no_warnings': True  # Make sure it's applied to all options
         })
         
-        # For YouTube, try different clients
-        if source == 'youtube':
-            # First try with android client which may not need a PO token
-            ydl_opts.update({
-                'extractor_args': {
-                    'youtube': {
-                        'player_client': ['android'],
-                        'player_skip': ['webpage']
-                    }
-                }
-            })
-            
-            try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=True)
-                    
-                    # Get the title and filename
-                    title = info.get('title', 'Unknown Title')
-                    
-                    if format_type == 'mp3':
-                        filename = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'
-                    else:
-                        filename = ydl.prepare_filename(info)
-                    
-                    # Get just the filename without the path
-                    base_filename = os.path.basename(filename)
-                    
-                    # Verify the file exists
-                    full_path = os.path.join(DOWNLOADS_FOLDER, base_filename)
-                    if os.path.exists(full_path):
-                        print(f"File successfully downloaded to: {full_path}")
-                        result['success'] = True
-                        result['title'] = title
-                        result['filename'] = base_filename
-                        return result
-            except Exception as e:
-                print(f"First attempt failed with android client: {str(e)}")
-                # Fall back to ios client if android fails
-                ydl_opts.update({
-                    'extractor_args': {
-                        'youtube': {
-                            'player_client': ['ios'],
-                            'player_skip': ['webpage']
-                        }
-                    }
-                })
-                
-                try:
-                    # Add a small delay before retry
-                    time.sleep(random.uniform(1.5, 3.0))
-                    
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        info = ydl.extract_info(url, download=True)
-                        
-                        # Get the title and filename
-                        title = info.get('title', 'Unknown Title')
-                        
-                        if format_type == 'mp3':
-                            filename = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'
-                        else:
-                            filename = ydl.prepare_filename(info)
-                        
-                        # Get just the filename without the path
-                        base_filename = os.path.basename(filename)
-                        
-                        # Verify the file exists
-                        full_path = os.path.join(DOWNLOADS_FOLDER, base_filename)
-                        if os.path.exists(full_path):
-                            print(f"File successfully downloaded to: {full_path}")
-                            result['success'] = True
-                            result['title'] = title
-                            result['filename'] = base_filename
-                            return result
-                except Exception as e:
-                    print(f"Second attempt failed with ios client: {str(e)}")
-                    # Last resort: try with mweb client
-                    ydl_opts.update({
-                        'extractor_args': {
-                            'youtube': {
-                                'player_client': ['mweb'],
-                                'player_skip': ['webpage']
-                            }
-                        }
-                    })
-                    
-                    # Add a small delay before final retry
-                    time.sleep(random.uniform(2.0, 4.0))
-        
-        # For non-YouTube or if previous attempts failed for YouTube
+        # Download and convert
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             
